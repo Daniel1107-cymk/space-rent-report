@@ -173,6 +173,30 @@ function PropertyDialog({
               required
             />
           </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="airbnbIcalUrl">URL iCal Airbnb</Label>
+            <Input
+              id="airbnbIcalUrl"
+              name="airbnbIcalUrl"
+              type="url"
+              defaultValue={property?.airbnbIcalUrl ?? ""}
+              placeholder="https://www.airbnb.com/calendar/ical/..."
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="agodaIcalUrl">URL iCal Agoda</Label>
+            <Input
+              id="agodaIcalUrl"
+              name="agodaIcalUrl"
+              type="url"
+              defaultValue={property?.agodaIcalUrl ?? ""}
+              placeholder="https://ycs.agoda.com/..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Opsional. Pemesanan baru disinkronkan otomatis setiap hari dari kalender iCal
+              (tanpa nominal — isi pembayaran nanti).
+            </p>
+          </div>
           {state?.error && (
             <p role="alert" className="text-sm text-destructive">
               {state.error}

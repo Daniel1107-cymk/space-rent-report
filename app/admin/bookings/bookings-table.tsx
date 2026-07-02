@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { saveBooking, deleteBooking, type ActionState } from "@/app/actions";
+import { saveBooking, deleteBooking, syncBookings, type ActionState } from "@/app/actions";
 import type { Booking } from "@/db/schema";
 import { formatIDR, dateLabel } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,10 @@ export function BookingsTable({
             Disaring berdasarkan bulan check-in. Pemesanan impor dan manual digabungkan.
           </p>
         </div>
-        <Button onClick={() => setEditing("new")}>Tambah pemesanan</Button>
+        <div className="flex items-center gap-2">
+          <SyncButton />
+          <Button onClick={() => setEditing("new")}>Tambah pemesanan</Button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -167,6 +170,33 @@ export function BookingsTable({
   );
 }
 
+function SyncButton() {
+  const [pending, startTransition] = useTransition();
+  const [message, setMessage] = useState("");
+
+  return (
+    <div className="flex items-center gap-2">
+      {message && <span className="text-xs text-muted-foreground">{message}</span>}
+      <Button
+        variant="outline"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            const { inserted, errors } = await syncBookings();
+            setMessage(
+              errors.length > 0
+                ? `${inserted} baru, gagal: ${errors.join("; ")}`
+                : `${inserted} pemesanan baru`
+            );
+          })
+        }
+      >
+        {pending ? "Menyinkronkan..." : "Sinkronkan iCal"}
+      </Button>
+    </div>
+  );
+}
+
 function BookingDialog({
   booking,
   properties,
@@ -209,6 +239,14 @@ function BookingDialog({
                   {p.name}
                 </option>
               ))}
+            </NativeSelect>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="source">Sumber</Label>
+            <NativeSelect id="source" name="source" defaultValue={booking?.source ?? "manual"}>
+              <option value="manual">Manual</option>
+              <option value="airbnb">Airbnb</option>
+              <option value="agoda">Agoda</option>
             </NativeSelect>
           </div>
           <div className="flex flex-col gap-2">

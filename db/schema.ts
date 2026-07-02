@@ -13,6 +13,9 @@ export const properties = sqliteTable("properties", {
   name: text("name").notNull(),
   ownerId: integer("owner_id").references(() => users.id),
   commissionPct: real("commission_pct").notNull().default(20),
+  // iCal export URLs for auto-sync (dates only; payout filled in manually)
+  airbnbIcalUrl: text("airbnb_ical_url"),
+  agodaIcalUrl: text("agoda_ical_url"),
 });
 
 export const bookings = sqliteTable(

@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { users, properties, bookings } from "@/db/schema";
 import { createSession, destroySession, requireRole, getSession } from "@/lib/auth";
+import { syncAllProperties } from "@/lib/sync";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
@@ -41,15 +42,21 @@ export async function saveProperty(_prev: ActionState, formData: FormData): Prom
   const name = String(formData.get("name") ?? "").trim();
   const ownerId = Number(formData.get("ownerId")) || null;
   const commissionPct = Number(formData.get("commissionPct"));
+  const airbnbIcalUrl = String(formData.get("airbnbIcalUrl") ?? "").trim() || null;
+  const agodaIcalUrl = String(formData.get("agodaIcalUrl") ?? "").trim() || null;
   if (!name) return { error: "Nama wajib diisi." };
   if (!Number.isFinite(commissionPct) || commissionPct < 0 || commissionPct > 100) {
     return { error: "Komisi harus bernilai antara 0 dan 100." };
   }
+  for (const url of [airbnbIcalUrl, agodaIcalUrl]) {
+    if (url && !/^https?:\/\//.test(url)) return { error: "URL iCal harus diawali http(s)://" };
+  }
 
+  const values = { name, ownerId, commissionPct, airbnbIcalUrl, agodaIcalUrl };
   if (id) {
-    await db.update(properties).set({ name, ownerId, commissionPct }).where(eq(properties.id, id));
+    await db.update(properties).set(values).where(eq(properties.id, id));
   } else {
-    await db.insert(properties).values({ name, ownerId, commissionPct });
+    await db.insert(properties).values(values);
   }
   revalidatePath("/admin", "layout");
 }
@@ -115,6 +122,8 @@ export async function saveBooking(_prev: ActionState, formData: FormData): Promi
   const checkIn = String(formData.get("checkIn") ?? "");
   const checkOut = String(formData.get("checkOut") ?? "");
   const payoutIdr = Math.round(Number(formData.get("payoutIdr")));
+  const rawSource = String(formData.get("source") ?? "manual");
+  const source = (["manual", "airbnb", "agoda"] as const).find((s) => s === rawSource) ?? "manual";
 
   if (!propertyId) return { error: "Pilih properti." };
   if (!ISO_DATE.test(checkIn) || !ISO_DATE.test(checkOut)) return { error: "Kedua tanggal wajib diisi." };
@@ -122,11 +131,11 @@ export async function saveBooking(_prev: ActionState, formData: FormData): Promi
   if (nights <= 0) return { error: "Tanggal check-out harus setelah tanggal check-in." };
   if (!Number.isFinite(payoutIdr) || payoutIdr < 0) return { error: "Pembayaran tidak boleh negatif." };
 
-  const values = { propertyId, guestName, checkIn, checkOut, nights, payoutIdr };
+  const values = { propertyId, guestName, checkIn, checkOut, nights, payoutIdr, source };
   if (id) {
     await db.update(bookings).set(values).where(eq(bookings.id, id));
   } else {
-    await db.insert(bookings).values({ ...values, source: "manual" });
+    await db.insert(bookings).values(values);
   }
   revalidatePath("/admin", "layout");
 }
@@ -182,6 +191,15 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
   revalidatePath("/admin", "layout");
   const inserted = result.rowsAffected;
   return { inserted, skipped: rows.length - inserted };
+}
+
+// ---------- iCal sync ----------
+
+export async function syncBookings(): Promise<{ inserted: number; errors: string[] }> {
+  await requireRole("admin");
+  const result = await syncAllProperties();
+  revalidatePath("/admin", "layout");
+  return result;
 }
 
 export async function changePassword(_prev: ActionState, formData: FormData): Promise<ActionState> {

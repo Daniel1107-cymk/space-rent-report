@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/auth";
 import { logout } from "@/app/actions";
 import { NavLink } from "@/components/nav-link";
 import { Button } from "@/components/ui/button";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await requireRole("admin");
@@ -18,12 +19,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <NavLink href="/admin/import">Import</NavLink>
             <NavLink href="/admin/owners">Owners</NavLink>
           </nav>
-          <form action={logout} className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <span className="hidden text-sm text-muted-foreground sm:inline">{session.name}</span>
-            <Button type="submit" variant="ghost" size="sm">
-              Sign out
-            </Button>
-          </form>
+            <ChangePasswordDialog />
+            <form action={logout}>
+              <Button type="submit" variant="ghost" size="sm">
+                Sign out
+              </Button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">{children}</main>

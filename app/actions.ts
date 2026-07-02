@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { users, properties, bookings } from "@/db/schema";
-import { createSession, destroySession, requireRole } from "@/lib/auth";
+import { createSession, destroySession, requireRole, getSession } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
@@ -183,3 +183,27 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
   const inserted = result.rowsAffected;
   return { inserted, skipped: rows.length - inserted };
 }
+
+export async function changePassword(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const session = await getSession();
+  if (!session) return { error: "Not logged in." };
+
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+
+  if (!currentPassword || !newPassword) return { error: "All fields are required." };
+  if (newPassword.length < 8) return { error: "New password must be at least 8 characters." };
+
+  const user = (await db.select().from(users).where(eq(users.id, session.uid)))[0];
+  if (!user || !bcrypt.compareSync(currentPassword, user.passwordHash)) {
+    return { error: "Incorrect current password." };
+  }
+
+  await db
+    .update(users)
+    .set({ passwordHash: bcrypt.hashSync(newPassword, 10) })
+    .where(eq(users.id, session.uid));
+
+  revalidatePath(session.role === "admin" ? "/admin" : "/owner", "layout");
+}
+

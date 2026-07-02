@@ -12,7 +12,7 @@ export function MonthPicker({ month }: { month: string }) {
     <input
       type="month"
       value={month}
-      aria-label="Report month"
+      aria-label="Bulan laporan"
       onChange={(e) => {
         if (!e.target.value) return;
         const params = new URLSearchParams(searchParams);

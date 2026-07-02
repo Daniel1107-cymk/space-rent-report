@@ -38,28 +38,28 @@ export function PropertiesTable({
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Properties</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Properti</h1>
           <p className="text-sm text-muted-foreground">
-            Each property has an owner and a commission rate.
+            Setiap properti memiliki pemilik dan tingkat komisi.
           </p>
         </div>
-        <Button onClick={() => setEditing("new")}>Add property</Button>
+        <Button onClick={() => setEditing("new")}>Tambah properti</Button>
       </div>
 
       {properties.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No properties yet</p>
+          <p className="font-medium">Belum ada properti</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add your first property to start recording bookings.
+            Tambahkan properti pertama Anda untuk mulai mencatat pemesanan.
           </p>
         </div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead className="text-right">Commission</TableHead>
+              <TableHead>Nama</TableHead>
+              <TableHead>Pemilik</TableHead>
+              <TableHead className="text-right">Komisi</TableHead>
               <TableHead className="w-32" />
             </TableRow>
           </TableHeader>
@@ -68,12 +68,12 @@ export function PropertiesTable({
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell className="text-muted-foreground">
-                  {p.ownerId ? (ownerName.get(p.ownerId) ?? "-") : "Unassigned"}
+                  {p.ownerId ? (ownerName.get(p.ownerId) ?? "-") : "Belum ditugaskan"}
                 </TableCell>
                 <TableCell className="tabular text-right">{p.commissionPct}%</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => setEditing(p)}>
-                    Edit
+                    Ubah
                   </Button>
                   <Button
                     variant="ghost"
@@ -82,13 +82,13 @@ export function PropertiesTable({
                     onClick={() => {
                       if (
                         confirm(
-                          `Delete "${p.name}"? All of its bookings will be deleted too.`
+                          `Hapus "${p.name}"? Semua pemesanan untuk properti ini juga akan dihapus.`
                         )
                       )
                         deleteProperty(p.id);
                     }}
                   >
-                    Delete
+                    Hapus
                   </Button>
                 </TableCell>
               </TableRow>
@@ -130,12 +130,12 @@ function PropertyDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{property ? "Edit property" : "Add property"}</DialogTitle>
+          <DialogTitle>{property ? "Ubah properti" : "Tambah properti"}</DialogTitle>
         </DialogHeader>
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="id" value={property?.id ?? ""} />
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nama</Label>
             <Input
               id="name"
               name="name"
@@ -145,9 +145,9 @@ function PropertyDialog({
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="ownerId">Owner</Label>
+            <Label htmlFor="ownerId">Pemilik</Label>
             <NativeSelect id="ownerId" name="ownerId" defaultValue={property?.ownerId ?? ""}>
-              <option value="">Unassigned</option>
+              <option value="">Belum ditugaskan</option>
               {owners.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
@@ -156,12 +156,12 @@ function PropertyDialog({
             </NativeSelect>
             {owners.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                No owners yet. You can add one on the Owners page and assign it later.
+                Belum ada pemilik. Anda dapat menambahkan pemilik di halaman Pemilik dan menetapkannya nanti.
               </p>
             )}
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="commissionPct">Commission %</Label>
+            <Label htmlFor="commissionPct">Komisi %</Label>
             <Input
               id="commissionPct"
               name="commissionPct"
@@ -180,10 +180,10 @@ function PropertyDialog({
           )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving..." : "Save"}
+              {pending ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
         </form>

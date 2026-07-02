@@ -19,17 +19,17 @@ export function ChangePasswordDialog() {
       const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
       if (!currentPassword || !newPassword || !confirmPassword) {
-        setClientError("All fields are required.");
+        setClientError("Semua kolom wajib diisi.");
         return;
       }
 
       if (newPassword.length < 8) {
-        setClientError("New password must be at least 8 characters.");
+        setClientError("Kata sandi baru minimal harus 8 karakter.");
         return;
       }
 
       if (newPassword !== confirmPassword) {
-        setClientError("New passwords do not match.");
+        setClientError("Kata sandi baru tidak cocok.");
         return;
       }
 
@@ -44,14 +44,14 @@ export function ChangePasswordDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="ghost" size="sm">Change password</Button>} />
+      <DialogTrigger render={<Button variant="ghost" size="sm">Ubah kata sandi</Button>} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Change password</DialogTitle>
+          <DialogTitle>Ubah kata sandi</DialogTitle>
         </DialogHeader>
         <form action={action} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="currentPassword">Current password</Label>
+            <Label htmlFor="currentPassword">Kata sandi saat ini</Label>
             <Input
               id="currentPassword"
               name="currentPassword"
@@ -60,24 +60,24 @@ export function ChangePasswordDialog() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="newPassword">New password</Label>
+            <Label htmlFor="newPassword">Kata sandi baru</Label>
             <Input
               id="newPassword"
               name="newPassword"
               type="password"
               minLength={8}
-              placeholder="At least 8 characters"
+              placeholder="Minimal 8 karakter"
               required
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="confirmPassword">Confirm new password</Label>
+            <Label htmlFor="confirmPassword">Konfirmasi kata sandi baru</Label>
             <Input
               id="confirmPassword"
               name="confirmPassword"
               type="password"
               minLength={8}
-              placeholder="Confirm new password"
+              placeholder="Konfirmasi kata sandi baru"
               required
             />
           </div>
@@ -92,10 +92,10 @@ export function ChangePasswordDialog() {
               variant="outline"
               onClick={() => setOpen(false)}
             >
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving..." : "Save password"}
+              {pending ? "Menyimpan..." : "Simpan kata sandi"}
             </Button>
           </div>
         </form>

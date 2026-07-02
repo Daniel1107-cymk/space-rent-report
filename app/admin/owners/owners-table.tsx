@@ -30,12 +30,12 @@ export function OwnersTable({ owners }: { owners: OwnerRow[] }) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Owners</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Pemilik</h1>
           <p className="text-sm text-muted-foreground">
-            Owner accounts can sign in and see reports for their properties.
+            Akun pemilik dapat masuk dan melihat laporan untuk properti mereka.
           </p>
         </div>
-        <Button onClick={() => setEditing("new")}>Add owner</Button>
+        <Button onClick={() => setEditing("new")}>Tambah pemilik</Button>
       </div>
 
       {deleteError && (
@@ -46,18 +46,18 @@ export function OwnersTable({ owners }: { owners: OwnerRow[] }) {
 
       {owners.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No owners yet</p>
+          <p className="font-medium">Belum ada pemilik</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create an account for each property owner so they can log in.
+            Buat akun untuk setiap pemilik properti agar mereka dapat masuk.
           </p>
         </div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
+              <TableHead>Nama</TableHead>
               <TableHead>Username</TableHead>
-              <TableHead className="text-right">Properties</TableHead>
+              <TableHead className="text-right">Properti</TableHead>
               <TableHead className="w-32" />
             </TableRow>
           </TableHeader>
@@ -69,19 +69,19 @@ export function OwnersTable({ owners }: { owners: OwnerRow[] }) {
                 <TableCell className="tabular text-right">{o.propertyCount}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => setEditing(o)}>
-                    Edit
+                    Ubah
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-destructive"
                     onClick={async () => {
-                      if (!confirm(`Delete owner "${o.name}"?`)) return;
+                      if (!confirm(`Hapus pemilik "${o.name}"?`)) return;
                       const result = await deleteOwner(o.id);
                       setDeleteError(result?.error ?? null);
                     }}
                   >
-                    Delete
+                    Hapus
                   </Button>
                 </TableCell>
               </TableRow>
@@ -114,12 +114,12 @@ function OwnerDialog({ owner, onClose }: { owner: OwnerRow | null; onClose: () =
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{owner ? "Edit owner" : "Add owner"}</DialogTitle>
+          <DialogTitle>{owner ? "Ubah pemilik" : "Tambah pemilik"}</DialogTitle>
         </DialogHeader>
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="id" value={owner?.id ?? ""} />
           <div className="flex flex-col gap-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nama</Label>
             <Input id="name" name="name" defaultValue={owner?.name ?? ""} required />
           </div>
           <div className="flex flex-col gap-2">
@@ -135,18 +135,18 @@ function OwnerDialog({ owner, onClose }: { owner: OwnerRow | null; onClose: () =
             />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password">{owner ? "New password" : "Password"}</Label>
+            <Label htmlFor="password">{owner ? "Password baru" : "Password"}</Label>
             <Input
               id="password"
               name="password"
               type="password"
               minLength={8}
               required={!owner}
-              placeholder={owner ? "Leave blank to keep current" : "At least 8 characters"}
+              placeholder={owner ? "Kosongkan jika tidak ingin diubah" : "Minimal 8 karakter"}
             />
             <p className="text-xs text-muted-foreground">
-              Share these credentials with the owner. There is no self-service reset;
-              you can set a new password here anytime.
+              Bagikan kredensial ini dengan pemilik. Tidak ada pengaturan ulang mandiri;
+              Anda dapat menetapkan password baru di sini kapan saja.
             </p>
           </div>
           {state?.error && (
@@ -156,10 +156,10 @@ function OwnerDialog({ owner, onClose }: { owner: OwnerRow | null; onClose: () =
           )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving..." : "Save"}
+              {pending ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
         </form>

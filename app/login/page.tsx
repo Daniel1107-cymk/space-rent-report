@@ -10,9 +10,9 @@ export default async function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8">
-          <p className="text-lg font-semibold tracking-tight">Rent Report</p>
+          <p className="text-lg font-semibold tracking-tight">Laporan Sewa</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sign in to see your properties and payouts.
+            Masuk untuk melihat properti dan pembayaran Anda.
           </p>
         </div>
         <LoginForm />

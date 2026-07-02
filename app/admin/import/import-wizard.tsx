@@ -52,13 +52,13 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
         const format = detectFormat(meta.fields ?? []);
         if (!format) {
           setError(
-            "Could not recognize this file. Expected an Airbnb payout CSV or an Agoda bookings CSV."
+            "File tidak dikenali. Diharapkan CSV pembayaran Airbnb atau CSV pemesanan Agoda."
           );
           return;
         }
         const rows = parseRows(format, data);
         if (rows.length === 0) {
-          setError("The file was recognized but contained no importable booking rows.");
+          setError("File dikenali tetapi tidak berisi baris pemesanan yang dapat diimpor.");
           return;
         }
         const listings = [...new Set(rows.map((r) => r.listing))];
@@ -67,7 +67,7 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
         );
         setParsed({ fileName: file.name, format, rows });
       },
-      error: () => setError("Could not read the file."),
+      error: () => setError("Tidak dapat membaca file."),
     });
   }
 
@@ -116,16 +116,16 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
   return (
     <div className="flex max-w-3xl flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Import bookings</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Impor pemesanan</h1>
         <p className="text-sm text-muted-foreground">
-          Upload a payout CSV from Airbnb or a bookings CSV from Agoda. Rows already
-          imported are skipped automatically, so re-uploading the same file is safe.
+          Unggah CSV pembayaran dari Airbnb atau CSV pemesanan dari Agoda. Baris yang sudah
+          diimpor akan dilewati secara otomatis, sehingga aman untuk mengunggah ulang file yang sama.
         </p>
       </div>
 
       <label className="flex cursor-pointer flex-col items-center gap-1 rounded-xl border border-dashed py-10 text-center transition-colors hover:bg-muted/50">
-        <span className="font-medium">Choose a CSV file</span>
-        <span className="text-sm text-muted-foreground">Airbnb or Agoda export</span>
+        <span className="font-medium">Pilih file CSV</span>
+        <span className="text-sm text-muted-foreground">Ekspor Airbnb atau Agoda</span>
         <input
           type="file"
           accept=".csv,text/csv"
@@ -146,10 +146,10 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
 
       {result && (
         <div className="rounded-xl border bg-muted/30 px-4 py-3 text-sm">
-          <span className="font-medium text-positive">{result.inserted} imported</span>
+          <span className="font-medium text-positive">{result.inserted} diimpor</span>
           {result.skipped > 0 && (
             <span className="text-muted-foreground">
-              , {result.skipped} skipped (already imported or not mapped)
+              , {result.skipped} dilewati (sudah diimpor atau tidak dipetakan)
             </span>
           )}
         </div>
@@ -162,17 +162,16 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
               {parsed.format === "airbnb" ? "Airbnb" : "Agoda"}
             </Badge>
             <span className="text-muted-foreground">
-              {parsed.fileName}: {parsed.rows.length} booking
-              {parsed.rows.length === 1 ? "" : "s"} found
+              {parsed.fileName}: {parsed.rows.length} pemesanan ditemukan
             </span>
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium">Match listings to your properties</p>
+            <p className="text-sm font-medium">Cocokkan iklan dengan properti Anda</p>
             {Object.keys(mapping).map((listing) => (
               <div key={listing} className="grid grid-cols-2 items-center gap-3">
-                <Label className="truncate" title={listing || "(no listing name)"}>
-                  {listing || "(no listing name in file)"}
+                <Label className="truncate" title={listing || "(tidak ada nama iklan)"}>
+                  {listing || "(tidak ada nama iklan di file)"}
                 </Label>
                 <NativeSelect
                   value={mapping[listing] || ""}
@@ -180,7 +179,7 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
                     setMapping((m) => ({ ...m, [listing]: Number(e.target.value) || 0 }))
                   }
                 >
-                  <option value="">Skip these rows</option>
+                  <option value="">Lewati baris ini</option>
                   {properties.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
@@ -194,11 +193,11 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Guest</TableHead>
+                <TableHead>Tamu</TableHead>
                 <TableHead>Check-in</TableHead>
-                <TableHead className="text-right">Nights</TableHead>
-                <TableHead className="text-right">Payout</TableHead>
-                <TableHead>Listing</TableHead>
+                <TableHead className="text-right">Malam</TableHead>
+                <TableHead className="text-right">Pembayaran</TableHead>
+                <TableHead>Iklan</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,7 +211,7 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
                       type="number"
                       min="0"
                       step="1"
-                      aria-label="Payout in IDR"
+                      aria-label="Pembayaran dalam IDR"
                       value={r.payoutIdr || ""}
                       placeholder="0"
                       onChange={(e) => setPayout(i, e.target.value)}
@@ -228,20 +227,20 @@ export function ImportWizard({ properties }: { properties: PropertyOption[] }) {
           </Table>
           {missingPayouts > 0 && (
             <p className="text-xs text-muted-foreground">
-              {missingPayouts} row{missingPayouts === 1 ? " has" : "s have"} no payout amount
-              (this Agoda export does not include one). Type the amounts above, or import
-              with 0 and fill them in later on the Bookings page.
+              {missingPayouts} baris tidak memiliki nominal pembayaran
+              (ekspor Agoda ini tidak mencantumkannya). Ketik nominal di atas, atau impor
+              dengan nilai 0 dan isi nanti di halaman Pemesanan.
             </p>
           )}
 
           <div className="flex items-center justify-end gap-3">
             <Button variant="outline" onClick={() => setParsed(null)}>
-              Cancel
+              Batal
             </Button>
             <Button onClick={runImport} disabled={pending || mappedRows.length === 0}>
               {pending
-                ? "Importing..."
-                : `Import ${mappedRows.length} booking${mappedRows.length === 1 ? "" : "s"}`}
+                ? "Mengimpor..."
+                : `Impor ${mappedRows.length} pemesanan`}
             </Button>
           </div>
         </>

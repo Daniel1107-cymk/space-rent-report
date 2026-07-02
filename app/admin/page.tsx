@@ -52,41 +52,41 @@ export default async function AdminDashboard({
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Ringkasan</h1>
           <p className="text-sm text-muted-foreground">{monthLabel(month)}</p>
         </div>
         <MonthPicker month={month} />
       </div>
 
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 border-y py-5 md:grid-cols-4">
-        <Stat label="Gross payouts" value={formatIDR(totalGross)} />
-        <Stat label="Commission earned" value={formatIDR(totalCommission)} accent />
-        <Stat label="Nights booked" value={String(totalNights)} />
-        <Stat label="Bookings" value={String(totalBookings)} />
+        <Stat label="Pembayaran kotor" value={formatIDR(totalGross)} />
+        <Stat label="Komisi yang diperoleh" value={formatIDR(totalCommission)} accent />
+        <Stat label="Malam dipesan" value={String(totalNights)} />
+        <Stat label="Pemesanan" value={String(totalBookings)} />
       </div>
 
       {allProperties.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No properties yet</p>
+          <p className="font-medium">Belum ada properti</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Start by adding a property on the{" "}
+            Mulai dengan menambahkan properti di halaman{" "}
             <Link href="/admin/properties" className="underline underline-offset-4">
-              Properties
-            </Link>{" "}
-            page.
+              Properti
+            </Link>
+            .
           </p>
         </div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Property</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead className="text-right">Nights</TableHead>
-              <TableHead className="text-right">Occupancy</TableHead>
-              <TableHead className="text-right">Gross</TableHead>
-              <TableHead className="text-right">Commission</TableHead>
-              <TableHead className="text-right">Owner net</TableHead>
+              <TableHead>Properti</TableHead>
+              <TableHead>Pemilik</TableHead>
+              <TableHead className="text-right">Malam</TableHead>
+              <TableHead className="text-right">Okupansi</TableHead>
+              <TableHead className="text-right">Kotor</TableHead>
+              <TableHead className="text-right">Komisi</TableHead>
+              <TableHead className="text-right">Bersih pemilik</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

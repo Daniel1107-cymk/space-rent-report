@@ -24,7 +24,7 @@ export function LoginForm() {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Kata sandi</Label>
         <Input
           id="password"
           name="password"
@@ -39,7 +39,7 @@ export function LoginForm() {
         </p>
       )}
       <Button type="submit" size="lg" disabled={pending} className="mt-2">
-        {pending ? "Signing in..." : "Sign in"}
+        {pending ? "Masuk..." : "Masuk"}
       </Button>
     </form>
   );

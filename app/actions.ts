@@ -17,11 +17,11 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 export async function login(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  if (!username || !password) return { error: "Username and password are required." };
+  if (!username || !password) return { error: "Username dan kata sandi wajib diisi." };
 
   const user = (await db.select().from(users).where(eq(users.username, username)))[0];
   if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
-    return { error: "Wrong username or password." };
+    return { error: "Username atau kata sandi salah." };
   }
 
   await createSession({ uid: user.id, role: user.role, name: user.name });
@@ -41,9 +41,9 @@ export async function saveProperty(_prev: ActionState, formData: FormData): Prom
   const name = String(formData.get("name") ?? "").trim();
   const ownerId = Number(formData.get("ownerId")) || null;
   const commissionPct = Number(formData.get("commissionPct"));
-  if (!name) return { error: "Name is required." };
+  if (!name) return { error: "Nama wajib diisi." };
   if (!Number.isFinite(commissionPct) || commissionPct < 0 || commissionPct > 100) {
-    return { error: "Commission must be between 0 and 100." };
+    return { error: "Komisi harus bernilai antara 0 dan 100." };
   }
 
   if (id) {
@@ -69,15 +69,15 @@ export async function saveOwner(_prev: ActionState, formData: FormData): Promise
   const name = String(formData.get("name") ?? "").trim();
   const username = String(formData.get("username") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  if (!name || !username) return { error: "Name and username are required." };
+  if (!name || !username) return { error: "Nama dan username wajib diisi." };
   if (!/^[a-z0-9._-]{3,30}$/.test(username)) {
-    return { error: "Username must be 3-30 characters: letters, numbers, dots, dashes." };
+    return { error: "Username harus terdiri dari 3-30 karakter: huruf, angka, titik, tanda hubung." };
   }
-  if (!id && password.length < 8) return { error: "Password must be at least 8 characters." };
-  if (id && password && password.length < 8) return { error: "Password must be at least 8 characters." };
+  if (!id && password.length < 8) return { error: "Kata sandi minimal harus 8 karakter." };
+  if (id && password && password.length < 8) return { error: "Kata sandi minimal harus 8 karakter." };
 
   const taken = (await db.select().from(users).where(eq(users.username, username)))[0];
-  if (taken && taken.id !== id) return { error: "That username is already taken." };
+  if (taken && taken.id !== id) return { error: "Username tersebut sudah digunakan." };
 
   if (id) {
     await db
@@ -99,7 +99,7 @@ export async function deleteOwner(id: number): Promise<ActionState> {
   await requireRole("admin");
   const owned = await db.select().from(properties).where(eq(properties.ownerId, id));
   if (owned.length > 0) {
-    return { error: "This owner still has properties assigned. Reassign them first." };
+    return { error: "Pemilik ini masih memiliki properti yang ditetapkan. Tetapkan ulang terlebih dahulu." };
   }
   await db.delete(users).where(and(eq(users.id, id), eq(users.role, "owner")));
   revalidatePath("/admin", "layout");
@@ -116,11 +116,11 @@ export async function saveBooking(_prev: ActionState, formData: FormData): Promi
   const checkOut = String(formData.get("checkOut") ?? "");
   const payoutIdr = Math.round(Number(formData.get("payoutIdr")));
 
-  if (!propertyId) return { error: "Pick a property." };
-  if (!ISO_DATE.test(checkIn) || !ISO_DATE.test(checkOut)) return { error: "Both dates are required." };
+  if (!propertyId) return { error: "Pilih properti." };
+  if (!ISO_DATE.test(checkIn) || !ISO_DATE.test(checkOut)) return { error: "Kedua tanggal wajib diisi." };
   const nights = Math.round((Date.parse(checkOut) - Date.parse(checkIn)) / 86_400_000);
-  if (nights <= 0) return { error: "Check-out must be after check-in." };
-  if (!Number.isFinite(payoutIdr) || payoutIdr < 0) return { error: "Payout cannot be negative." };
+  if (nights <= 0) return { error: "Tanggal check-out harus setelah tanggal check-in." };
+  if (!Number.isFinite(payoutIdr) || payoutIdr < 0) return { error: "Pembayaran tidak boleh negatif." };
 
   const values = { propertyId, guestName, checkIn, checkOut, nights, payoutIdr };
   if (id) {
@@ -161,7 +161,7 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
       r.nights > 0 &&
       r.payoutIdr >= 0 // Agoda booking exports carry no amount; 0 means "fill in later"
   );
-  if (valid.length === 0) return { error: "No valid rows to import." };
+  if (valid.length === 0) return { error: "Tidak ada baris valid untuk diimpor." };
 
   const result = await db
     .insert(bookings)
@@ -186,17 +186,17 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
 
 export async function changePassword(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Not logged in." };
+  if (!session) return { error: "Belum login." };
 
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
 
-  if (!currentPassword || !newPassword) return { error: "All fields are required." };
-  if (newPassword.length < 8) return { error: "New password must be at least 8 characters." };
+  if (!currentPassword || !newPassword) return { error: "Semua kolom wajib diisi." };
+  if (newPassword.length < 8) return { error: "Kata sandi baru minimal harus 8 karakter." };
 
   const user = (await db.select().from(users).where(eq(users.id, session.uid)))[0];
   if (!user || !bcrypt.compareSync(currentPassword, user.passwordHash)) {
-    return { error: "Incorrect current password." };
+    return { error: "Kata sandi saat ini salah." };
   }
 
   await db

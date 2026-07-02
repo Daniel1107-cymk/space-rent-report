@@ -65,7 +65,7 @@ export default async function OwnerReport({
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Your report</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Laporan Anda</h1>
           <p className="text-sm text-muted-foreground">{monthLabel(month)}</p>
         </div>
         <MonthPicker month={month} />
@@ -73,22 +73,20 @@ export default async function OwnerReport({
 
       {myProperties.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No properties assigned to you yet</p>
+          <p className="font-medium">Belum ada properti yang ditugaskan kepada Anda</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Contact your property manager if this looks wrong.
+            Hubungi manajer properti Anda jika ini terlihat salah.
           </p>
         </div>
       ) : (
         <>
           <div className="rounded-2xl border bg-card px-6 py-6">
-            <p className="text-sm text-muted-foreground">Your net payout, {monthLabel(month)}</p>
+            <p className="text-sm text-muted-foreground">Pembayaran bersih Anda, {monthLabel(month)}</p>
             <p className="tabular mt-2 text-4xl font-semibold tracking-tight text-positive">
               {formatIDR(totalNet)}
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
-              {totalNights} night{totalNights === 1 ? "" : "s"} booked across{" "}
-              {myProperties.length} propert{myProperties.length === 1 ? "y" : "ies"},
-              after commission.
+              {totalNights} malam dipesan di {myProperties.length} properti, setelah komisi.
             </p>
           </div>
 
@@ -97,36 +95,36 @@ export default async function OwnerReport({
               <div className="flex items-baseline justify-between gap-3 border-b pb-2">
                 <h2 className="font-semibold tracking-tight">{property.name}</h2>
                 <p className="text-sm text-muted-foreground">
-                  {property.commissionPct}% commission
+                  Komisi {property.commissionPct}%
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-4">
-                <Stat label="Days rented" value={String(summary.nights)} />
-                <Stat label="Occupancy" value={`${summary.occupancyPct}%`} />
-                <Stat label="Gross payout" value={formatIDR(summary.gross)} />
-                <Stat label="Your net" value={formatIDR(summary.net)} accent />
+                <Stat label="Hari disewa" value={String(summary.nights)} />
+                <Stat label="Okupansi" value={`${summary.occupancyPct}%`} />
+                <Stat label="Pembayaran kotor" value={formatIDR(summary.gross)} />
+                <Stat label="Bersih Anda" value={formatIDR(summary.net)} accent />
               </div>
 
               {rows.length === 0 ? (
                 <p className="py-4 text-sm text-muted-foreground">
-                  No bookings this month.
+                  Tidak ada pemesanan bulan ini.
                 </p>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Guest</TableHead>
+                      <TableHead>Tamu</TableHead>
                       <TableHead>Check-in</TableHead>
-                      <TableHead className="text-right">Nights</TableHead>
-                      <TableHead className="text-right">Payout</TableHead>
-                      <TableHead className="text-right">Your net</TableHead>
+                      <TableHead className="text-right">Malam</TableHead>
+                      <TableHead className="text-right">Pembayaran</TableHead>
+                      <TableHead className="text-right">Bersih Anda</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {rows.map((b) => (
                       <TableRow key={b.id}>
-                        <TableCell>{b.guestName || "Guest"}</TableCell>
+                        <TableCell>{b.guestName || "Tamu"}</TableCell>
                         <TableCell className="tabular">{dateLabel(b.checkIn)}</TableCell>
                         <TableCell className="tabular text-right">{b.nights}</TableCell>
                         <TableCell className="tabular text-right">

@@ -28,7 +28,7 @@ export function daysInMonth(month: string): number {
 /** "2026-07" -> "July 2026" */
 export function monthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString("en-US", {
+  return new Date(y, m - 1, 1).toLocaleDateString("id-ID", {
     month: "long",
     year: "numeric",
   });
@@ -37,7 +37,7 @@ export function monthLabel(month: string): string {
 /** "2026-07-14" -> "14 Jul 2026" */
 export function dateLabel(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
+  return new Date(y, m - 1, d).toLocaleDateString("id-ID", {
     day: "numeric",
     month: "short",
     year: "numeric",

@@ -64,23 +64,23 @@ export function BookingsTable({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Bookings</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Pemesanan</h1>
           <p className="text-sm text-muted-foreground">
-            Filtered by check-in month. Imported and manual bookings together.
+            Disaring berdasarkan bulan check-in. Pemesanan impor dan manual digabungkan.
           </p>
         </div>
-        <Button onClick={() => setEditing("new")}>Add booking</Button>
+        <Button onClick={() => setEditing("new")}>Tambah pemesanan</Button>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <MonthPicker month={month} />
         <NativeSelect
-          aria-label="Filter by property"
+          aria-label="Saring berdasarkan properti"
           className="w-44"
           value={propertyFilter || ""}
           onChange={(e) => setParam("property", e.target.value)}
         >
-          <option value="">All properties</option>
+          <option value="">Semua properti</option>
           {properties.map((p) => (
             <option key={p.id} value={p.id}>
               {p.name}
@@ -88,12 +88,12 @@ export function BookingsTable({
           ))}
         </NativeSelect>
         <NativeSelect
-          aria-label="Filter by source"
+          aria-label="Saring berdasarkan sumber"
           className="w-32"
           value={sourceFilter}
           onChange={(e) => setParam("source", e.target.value)}
         >
-          <option value="">All sources</option>
+          <option value="">Semua sumber</option>
           <option value="airbnb">Airbnb</option>
           <option value="agoda">Agoda</option>
           <option value="manual">Manual</option>
@@ -102,22 +102,22 @@ export function BookingsTable({
 
       {bookings.length === 0 ? (
         <div className="rounded-xl border border-dashed py-16 text-center">
-          <p className="font-medium">No bookings this month</p>
+          <p className="font-medium">Tidak ada pemesanan bulan ini</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add one manually or import a CSV from Airbnb or Agoda.
+            Tambah secara manual atau impor CSV dari Airbnb atau Agoda.
           </p>
         </div>
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Property</TableHead>
-              <TableHead>Guest</TableHead>
+              <TableHead>Properti</TableHead>
+              <TableHead>Tamu</TableHead>
               <TableHead>Check-in</TableHead>
               <TableHead>Check-out</TableHead>
-              <TableHead className="text-right">Nights</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="text-right">Payout</TableHead>
+              <TableHead className="text-right">Malam</TableHead>
+              <TableHead>Sumber</TableHead>
+              <TableHead className="text-right">Pembayaran</TableHead>
               <TableHead className="w-32" />
             </TableRow>
           </TableHeader>
@@ -137,17 +137,17 @@ export function BookingsTable({
                 <TableCell className="tabular text-right">{formatIDR(b.payoutIdr)}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" onClick={() => setEditing(b)}>
-                    Edit
+                    Ubah
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     className="text-destructive"
                     onClick={() => {
-                      if (confirm("Delete this booking?")) deleteBooking(b.id);
+                      if (confirm("Hapus pemesanan ini?")) deleteBooking(b.id);
                     }}
                   >
-                    Delete
+                    Hapus
                   </Button>
                 </TableCell>
               </TableRow>
@@ -189,12 +189,12 @@ function BookingDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{booking ? "Edit booking" : "Add booking"}</DialogTitle>
+          <DialogTitle>{booking ? "Ubah pemesanan" : "Tambah pemesanan"}</DialogTitle>
         </DialogHeader>
         <form action={action} className="flex flex-col gap-4">
           <input type="hidden" name="id" value={booking?.id ?? ""} />
           <div className="flex flex-col gap-2">
-            <Label htmlFor="propertyId">Property</Label>
+            <Label htmlFor="propertyId">Properti</Label>
             <NativeSelect
               id="propertyId"
               name="propertyId"
@@ -202,7 +202,7 @@ function BookingDialog({
               required
             >
               <option value="" disabled>
-                Pick a property
+                Pilih properti
               </option>
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -212,7 +212,7 @@ function BookingDialog({
             </NativeSelect>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="guestName">Guest name</Label>
+            <Label htmlFor="guestName">Nama tamu</Label>
             <Input id="guestName" name="guestName" defaultValue={booking?.guestName ?? ""} />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -238,7 +238,7 @@ function BookingDialog({
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="payoutIdr">Payout (IDR)</Label>
+            <Label htmlFor="payoutIdr">Pembayaran (IDR)</Label>
             <Input
               id="payoutIdr"
               name="payoutIdr"
@@ -257,10 +257,10 @@ function BookingDialog({
           )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Batal
             </Button>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving..." : "Save"}
+              {pending ? "Menyimpan..." : "Simpan"}
             </Button>
           </div>
         </form>

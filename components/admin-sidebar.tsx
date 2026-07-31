@@ -2,6 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  LayoutDashboardIcon,
+  BuildingIcon,
+  CalendarIcon,
+  SparklesIcon,
+  UploadIcon,
+  UsersIcon,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -19,12 +27,12 @@ import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import { logout } from "@/app/actions";
 
 const navItems = [
-  { href: "/admin", label: "Ringkasan", exact: true },
-  { href: "/admin/properties", label: "Properti", exact: false },
-  { href: "/admin/bookings", label: "Pemesanan", exact: false },
-  { href: "/admin/cleaning", label: "Kebersihan", exact: false },
-  { href: "/admin/import", label: "Impor", exact: false },
-  { href: "/admin/owners", label: "Pemilik", exact: false },
+  { href: "/admin", label: "Ringkasan", exact: true, icon: LayoutDashboardIcon },
+  { href: "/admin/properties", label: "Properti", exact: false, icon: BuildingIcon },
+  { href: "/admin/bookings", label: "Pemesanan", exact: false, icon: CalendarIcon },
+  { href: "/admin/cleaning", label: "Kebersihan", exact: false, icon: SparklesIcon },
+  { href: "/admin/import", label: "Impor", exact: false, icon: UploadIcon },
+  { href: "/admin/owners", label: "Pemilik", exact: false, icon: UsersIcon },
 ];
 
 interface AdminSidebarProps {
@@ -36,28 +44,39 @@ export function AdminSidebar({ userName }: AdminSidebarProps) {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b px-4 py-3">
-        <p className="text-sm font-semibold tracking-tight truncate">
-          Laporan Sewa
-        </p>
+      <SidebarHeader className="border-b py-3">
+        <Link
+          href="/admin"
+          className="flex items-center gap-2 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+        >
+          <img
+            src="/SPACE RENT.png"
+            alt="Space Rent"
+            className="size-8 min-w-8 shrink-0 rounded-full object-cover"
+          />
+          <span className="truncate text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+            Space Rent
+          </span>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => {
-                const isActive = item.exact
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
+              {navItems.map(({ href, label, exact, icon: Icon }) => {
+                const isActive = exact
+                  ? pathname === href
+                  : pathname.startsWith(href);
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={href}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      render={<Link href={item.href} />}
-                      tooltip={item.label}
+                      render={<Link href={href} />}
+                      tooltip={label}
                     >
-                      {item.label}
+                      <Icon />
+                      <span>{label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );

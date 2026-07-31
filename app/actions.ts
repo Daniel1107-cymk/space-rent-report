@@ -146,6 +146,15 @@ export async function deleteBooking(id: number) {
   revalidatePath("/admin", "layout");
 }
 
+export async function markBookingCleaned(id: number) {
+  await requireRole("admin");
+  await db
+    .update(bookings)
+    .set({ cleanedAt: new Date().toISOString() })
+    .where(eq(bookings.id, id));
+  revalidatePath("/admin", "layout");
+}
+
 // ---------- CSV import ----------
 
 export type ImportRow = {

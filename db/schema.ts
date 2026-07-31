@@ -36,6 +36,8 @@ export const bookings = sqliteTable(
     createdAt: text("created_at")
       .notNull()
       .$defaultFn(() => new Date().toISOString()),
+    // Set when admin marks the unit as cleaned after guest checkout
+    cleanedAt: text("cleaned_at"),
   },
   (t) => [
     // dedupe key for CSV re-imports; SQLite allows multiple NULLs so manual rows are unaffected

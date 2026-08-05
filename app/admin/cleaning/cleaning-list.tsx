@@ -42,7 +42,7 @@ function dateLabel(iso: string): string {
   });
 }
 
-function MarkCleanButton({ bookingId }: { bookingId: number }) {
+export function MarkCleanButton({ bookingId }: { bookingId: number }) {
   const [pending, startTransition] = useTransition();
   return (
     <Button

@@ -1,14 +1,16 @@
 import { db } from "@/lib/db";
 import { bookings, properties, users } from "@/db/schema";
-import { and, gte, gt, isNull, lt, lte, eq } from "drizzle-orm";
+import { and, gte, lt, lte, eq } from "drizzle-orm";
 import { currentMonth, monthRange, monthLabel, daysInMonth, formatIDR, dateLabel } from "@/lib/format";
 import { summarize } from "@/lib/report";
+import { getCleaningStatus } from "@/lib/cleaning";
 import { MonthPicker } from "@/components/month-picker";
 import { Stat } from "@/components/stat";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { PropertyOverviewChart } from "@/components/property-overview-chart";
 import { UserIcon, BedDoubleIcon, SparklesIcon, ArrowRightIcon } from "lucide-react";
+import { MarkCleanButton } from "./cleaning/cleaning-list";
 
 export default async function AdminDashboard({
   searchParams,
@@ -22,63 +24,34 @@ export default async function AdminDashboard({
   /** Today as YYYY-MM-DD in Asia/Jakarta (WIB, UTC+7). */
   const today = new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Jakarta" }).format(new Date());
 
-  /** Days between two ISO date strings (positive if a is later). */
-  function daysBetween(a: string, b: string) {
-    return Math.round((Date.parse(a) - Date.parse(b)) / 86_400_000);
-  }
-
-  const [allProperties, owners, monthBookings, todayBookings, checkoutBookings] = await Promise.all([
+  const [allProperties, owners, monthBookings, pastAndActiveBookings] = await Promise.all([
     db.select().from(properties),
     db.select().from(users).where(eq(users.role, "owner")),
     db
       .select()
       .from(bookings)
       .where(and(gte(bookings.checkIn, start), lt(bookings.checkIn, end))),
-    // Occupied today: checkIn <= today < checkOut
+    // Bookings checked in on or before today
     db
       .select()
       .from(bookings)
-      .where(and(lte(bookings.checkIn, today), gt(bookings.checkOut, today))),
-    // Candidates for cleaning: checked in on or before today, not yet marked clean
-    db
-      .select()
-      .from(bookings)
-      .where(and(lte(bookings.checkIn, today), isNull(bookings.cleanedAt))),
+      .where(lte(bookings.checkIn, today)),
   ]);
 
   const ownerName = new Map(owners.map((o) => [o.id, o.name]));
+
+  // Active bookings today: checkIn <= today < checkOut
+  const todayBookings = pastAndActiveBookings.filter(
+    (b) => b.checkIn <= today && b.checkOut > today
+  );
 
   // Map propertyId -> active booking today (first match)
   const activeBookingByProperty = new Map(
     todayBookings.map((b) => [b.propertyId, b])
   );
 
-  // Derive needs-cleaning list (same logic as /admin/cleaning)
-  const byProperty = new Map<number, typeof checkoutBookings>();
-  for (const b of checkoutBookings) {
-    if (!byProperty.has(b.propertyId)) byProperty.set(b.propertyId, []);
-    byProperty.get(b.propertyId)!.push(b);
-  }
-  const propertyName = new Map(allProperties.map((p) => [p.id, p.name]));
-
-  const needsCleaning: { bookingId: number; propertyName: string; guestName: string | null; checkOut: string; daysSince: number }[] = [];
-  for (const [propId, propBookings] of byProperty) {
-    const active = propBookings.find((b) => b.checkIn <= today && b.checkOut > today);
-    if (active) continue; // unit is occupied — skip
-    const completed = propBookings
-      .filter((b) => b.checkOut <= today)
-      .sort((a, b) => b.checkOut.localeCompare(a.checkOut));
-    if (!completed.length) continue;
-    const last = completed[0];
-    needsCleaning.push({
-      bookingId: last.id,
-      propertyName: propertyName.get(propId) ?? `Unit #${propId}`,
-      guestName: last.guestName,
-      checkOut: last.checkOut,
-      daysSince: daysBetween(today, last.checkOut),
-    });
-  }
-  needsCleaning.sort((a, b) => a.checkOut.localeCompare(b.checkOut)); // oldest first = most urgent
+  // Derive cleaning status using shared single-source-of-truth helper
+  const { needsCleaning } = getCleaningStatus(allProperties, pastAndActiveBookings, today);
 
   const rows = allProperties.map((p) => ({
     property: p,
@@ -240,6 +213,7 @@ export default async function AdminDashboard({
                   >
                     {entry.daysSince === 0 ? "Hari ini" : entry.daysSince === 1 ? "Kemarin" : `${entry.daysSince} hari lalu`}
                   </Badge>
+                  <MarkCleanButton bookingId={entry.bookingId} />
                 </div>
               );
             })}

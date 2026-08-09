@@ -278,4 +278,5 @@ export async function deleteStaff(id: number): Promise<ActionState> {
   await requireRole("admin");
   await db.delete(users).where(and(eq(users.id, id), eq(users.role, "cleaner")));
   revalidatePath("/admin", "layout");
+  return;
 }

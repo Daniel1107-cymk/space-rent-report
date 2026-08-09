@@ -26,7 +26,9 @@ export async function login(_prev: ActionState, formData: FormData): Promise<Act
   }
 
   await createSession({ uid: user.id, role: user.role, name: user.name });
-  redirect(user.role === "admin" ? "/admin" : "/owner");
+  if (user.role === "admin") redirect("/admin");
+  if (user.role === "cleaner") redirect("/cleaning");
+  redirect("/owner");
 }
 
 export async function logout() {
@@ -147,12 +149,13 @@ export async function deleteBooking(id: number) {
 }
 
 export async function markBookingCleaned(id: number) {
-  await requireRole("admin");
+  await requireRole("admin", "cleaner");
   await db
     .update(bookings)
     .set({ cleanedAt: new Date().toISOString() })
     .where(eq(bookings.id, id));
   revalidatePath("/admin", "layout");
+  revalidatePath("/cleaning", "layout");
 }
 
 // ---------- CSV import ----------
@@ -231,6 +234,48 @@ export async function changePassword(_prev: ActionState, formData: FormData): Pr
     .set({ passwordHash: bcrypt.hashSync(newPassword, 10) })
     .where(eq(users.id, session.uid));
 
-  revalidatePath(session.role === "admin" ? "/admin" : "/owner", "layout");
+  if (session.role === "admin") revalidatePath("/admin", "layout");
+  else if (session.role === "cleaner") revalidatePath("/cleaning", "layout");
+  else revalidatePath("/owner", "layout");
 }
 
+// ---------- staff (cleaner accounts) ----------
+
+export async function saveStaff(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole("admin");
+  const id = Number(formData.get("id")) || 0;
+  const name = String(formData.get("name") ?? "").trim();
+  const username = String(formData.get("username") ?? "").trim().toLowerCase();
+  const password = String(formData.get("password") ?? "");
+
+  if (!name || !username) return { error: "Nama dan username wajib diisi." };
+  if (!/^[a-z0-9._-]{3,30}$/.test(username)) {
+    return { error: "Username harus terdiri dari 3-30 karakter: huruf, angka, titik, tanda hubung." };
+  }
+  if (!id && password.length < 8) return { error: "Kata sandi minimal harus 8 karakter." };
+  if (id && password && password.length < 8) return { error: "Kata sandi minimal harus 8 karakter." };
+
+  const taken = (await db.select().from(users).where(eq(users.username, username)))[0];
+  if (taken && taken.id !== id) return { error: "Username tersebut sudah digunakan." };
+
+  if (id) {
+    await db
+      .update(users)
+      .set({ name, username, ...(password ? { passwordHash: bcrypt.hashSync(password, 10) } : {}) })
+      .where(eq(users.id, id));
+  } else {
+    await db.insert(users).values({
+      name,
+      username,
+      passwordHash: bcrypt.hashSync(password, 10),
+      role: "cleaner",
+    });
+  }
+  revalidatePath("/admin", "layout");
+}
+
+export async function deleteStaff(id: number): Promise<ActionState> {
+  await requireRole("admin");
+  await db.delete(users).where(and(eq(users.id, id), eq(users.role, "cleaner")));
+  revalidatePath("/admin", "layout");
+}

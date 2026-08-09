@@ -5,7 +5,7 @@ export const users = sqliteTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   name: text("name").notNull(),
-  role: text("role").$type<"admin" | "owner">().notNull(),
+  role: text("role").$type<"admin" | "owner" | "cleaner">().notNull(),
 });
 
 export const properties = sqliteTable("properties", {

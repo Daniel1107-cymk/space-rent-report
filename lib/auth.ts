@@ -8,7 +8,7 @@ const secret = new TextEncoder().encode(
 
 export type Session = {
   uid: number;
-  role: "admin" | "owner";
+  role: "admin" | "owner" | "cleaner";
   name: string;
 };
 
@@ -48,9 +48,9 @@ export async function destroySession() {
   (await cookies()).delete(COOKIE);
 }
 
-/** Redirects to /login unless the session has the required role. */
-export async function requireRole(role: Session["role"]): Promise<Session> {
+/** Redirects to /login unless the session has one of the required roles. */
+export async function requireRole(...roles: Session["role"][]): Promise<Session> {
   const session = await getSession();
-  if (!session || session.role !== role) redirect("/login");
+  if (!session || !roles.includes(session.role)) redirect("/login");
   return session;
 }

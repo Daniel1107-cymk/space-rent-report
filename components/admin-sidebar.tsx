@@ -9,6 +9,7 @@ import {
   SparklesIcon,
   UploadIcon,
   UsersIcon,
+  BrushIcon,
 } from "lucide-react";
 
 import {
@@ -33,6 +34,7 @@ const navItems = [
   { href: "/admin/cleaning", label: "Kebersihan", exact: false, icon: SparklesIcon },
   { href: "/admin/import", label: "Impor", exact: false, icon: UploadIcon },
   { href: "/admin/owners", label: "Pemilik", exact: false, icon: UsersIcon },
+  { href: "/admin/staff", label: "Staf", exact: false, icon: BrushIcon },
 ];
 
 interface AdminSidebarProps {

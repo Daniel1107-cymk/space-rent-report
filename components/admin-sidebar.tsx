@@ -10,6 +10,7 @@ import {
   UploadIcon,
   UsersIcon,
   BrushIcon,
+  WalletIcon,
 } from "lucide-react";
 
 import {
@@ -31,6 +32,7 @@ const navItems = [
   { href: "/admin", label: "Ringkasan", exact: true, icon: LayoutDashboardIcon },
   { href: "/admin/properties", label: "Properti", exact: false, icon: BuildingIcon },
   { href: "/admin/bookings", label: "Pemesanan", exact: false, icon: CalendarIcon },
+  { href: "/admin/finance", label: "Keuangan", exact: false, icon: WalletIcon },
   { href: "/admin/cleaning", label: "Kebersihan", exact: false, icon: SparklesIcon },
   { href: "/admin/import", label: "Impor", exact: false, icon: UploadIcon },
   { href: "/admin/owners", label: "Pemilik", exact: false, icon: UsersIcon },

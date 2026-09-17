@@ -25,6 +25,27 @@ export function daysInMonth(month: string): number {
   return new Date(y, m, 0).getDate();
 }
 
+/** "2026-06" -> "2026-08" -> { start: "2026-06-01", end: "2026-09-01" } (end exclusive). */
+export function monthRangeSpan(from: string, to: string): { start: string; end: string } {
+  return { start: monthRange(from).start, end: monthRange(to).end };
+}
+
+/** Inclusive list of "YYYY-MM" months from `from` to `to`. */
+export function monthsBetween(from: string, to: string): string[] {
+  const months: string[] = [];
+  let [y, m] = from.split("-").map(Number);
+  const [toY, toM] = to.split("-").map(Number);
+  while (y < toY || (y === toY && m <= toM)) {
+    months.push(`${y}-${String(m).padStart(2, "0")}`);
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+  return months;
+}
+
 /** "2026-07" -> "July 2026" */
 export function monthLabel(month: string): string {
   const [y, m] = month.split("-").map(Number);

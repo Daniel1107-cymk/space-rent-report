@@ -73,7 +73,7 @@ export function Transfers({ balances, history }: { balances: BalanceRow[]; histo
       <section className="flex flex-col gap-4">
         <h2 className="border-b pb-2 font-semibold tracking-tight">Riwayat transfer</h2>
         {history.length === 0 ? (
-          <p className="py-4 text-sm text-muted-foreground">Tidak ada transfer pada periode ini.</p>
+          <p className="py-4 text-sm text-muted-foreground">Belum ada transfer.</p>
         ) : (
           <Table>
             <TableHeader>

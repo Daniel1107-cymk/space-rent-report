@@ -73,16 +73,12 @@ export default async function FinancePage({
 
   const shownOwners = owners.filter((o) => ownerId === "all" || o.id === Number(ownerId));
   const balances = await ownerBalances();
+  // All transfers regardless of period: the balance counts all of them, so the list must too.
+  // ponytail: no pagination; add a limit when the list gets long
   const history = await db
     .select()
     .from(transfers)
-    .where(
-      and(
-        gte(transfers.transferredOn, start),
-        lt(transfers.transferredOn, end),
-        ownerId === "all" ? undefined : eq(transfers.ownerId, Number(ownerId))
-      )
-    )
+    .where(ownerId === "all" ? undefined : eq(transfers.ownerId, Number(ownerId)))
     .orderBy(desc(transfers.transferredOn), desc(transfers.id));
 
   const totalGross = ownerReports.reduce((s, r) => s + r.summary.gross, 0);

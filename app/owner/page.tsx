@@ -101,12 +101,38 @@ export default async function OwnerReport({
           </div>
 
           <div className="rounded-2xl border bg-card px-6 py-6">
-            <p className="text-sm text-muted-foreground">Saldo ditahan di perusahaan</p>
+            <p className="text-sm text-muted-foreground">Saldo yang belum di transfer</p>
             <p className="tabular mt-2 text-2xl font-semibold tracking-tight">{formatIDR(balance)}</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Pendapatan bersih s/d akhir bulan lalu dikurangi transfer.
             </p>
           </div>
+
+          <section className="flex flex-col gap-4">
+            <h2 className="border-b pb-2 font-semibold tracking-tight">Riwayat transfer</h2>
+            {myTransfers.length === 0 ? (
+              <p className="py-4 text-sm text-muted-foreground">Belum ada transfer.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Catatan</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {myTransfers.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="tabular">{dateLabel(t.transferredOn)}</TableCell>
+                      <TableCell className="text-muted-foreground">{t.note}</TableCell>
+                      <TableCell className="tabular text-right">{formatIDR(t.amountIdr)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
 
           {reports.map(({ property, bookings: rows, summary }) => (
             <section key={property.id} className="flex flex-col gap-4">
@@ -161,32 +187,6 @@ export default async function OwnerReport({
               )}
             </section>
           ))}
-
-          <section className="flex flex-col gap-4">
-            <h2 className="border-b pb-2 font-semibold tracking-tight">Riwayat transfer</h2>
-            {myTransfers.length === 0 ? (
-              <p className="py-4 text-sm text-muted-foreground">Belum ada transfer.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tanggal</TableHead>
-                    <TableHead>Catatan</TableHead>
-                    <TableHead className="text-right">Jumlah</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {myTransfers.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell className="tabular">{dateLabel(t.transferredOn)}</TableCell>
-                      <TableCell className="text-muted-foreground">{t.note}</TableCell>
-                      <TableCell className="tabular text-right">{formatIDR(t.amountIdr)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </section>
         </>
       )}
     </div>

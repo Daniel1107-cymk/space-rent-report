@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-type BalanceRow = { ownerId: number; name: string; balance: number };
+type BalanceRow = { ownerId: number; name: string; earned: number; sent: number; balance: number };
 type TransferRow = {
   id: number;
   ownerName: string;
@@ -49,6 +49,8 @@ export function Transfers({ balances, history }: { balances: BalanceRow[]; histo
             <TableHeader>
               <TableRow>
                 <TableHead>Pemilik</TableHead>
+                <TableHead className="text-right">Pendapatan</TableHead>
+                <TableHead className="text-right">Ditransfer</TableHead>
                 <TableHead className="text-right">Saldo ditahan</TableHead>
                 <TableHead className="w-32" />
               </TableRow>
@@ -57,6 +59,8 @@ export function Transfers({ balances, history }: { balances: BalanceRow[]; histo
               {balances.map((b) => (
                 <TableRow key={b.ownerId}>
                   <TableCell className="font-medium">{b.name}</TableCell>
+                  <TableCell className="tabular text-right">{formatIDR(b.earned)}</TableCell>
+                  <TableCell className="tabular text-right">{formatIDR(b.sent)}</TableCell>
                   <TableCell className="tabular text-right">{formatIDR(b.balance)}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm" onClick={() => setPaying(b)}>

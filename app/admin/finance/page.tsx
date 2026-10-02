@@ -142,7 +142,10 @@ export default async function FinancePage({
       )}
 
       <Transfers
-        balances={shownOwners.map((o) => ({ ownerId: o.id, name: o.name, balance: balances.get(o.id) ?? 0 }))}
+        balances={shownOwners.map((o) => {
+          const { earned = 0, sent = 0 } = balances.get(o.id) ?? {};
+          return { ownerId: o.id, name: o.name, earned, sent, balance: earned - sent };
+        })}
         history={history.map((t) => ({
           ...t,
           ownerName: owners.find((o) => o.id === t.ownerId)?.name ?? "-",

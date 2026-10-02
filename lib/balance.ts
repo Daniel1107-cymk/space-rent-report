@@ -4,10 +4,12 @@ import { lt, sum } from "drizzle-orm";
 import { currentMonth, monthRange } from "@/lib/format";
 import { netAcrossMonths } from "@/lib/report";
 
-/** Held balance per owner: net from completed months (check-in before this month) minus all transfers. */
+export type Balance = { earned: number; sent: number };
+
+/** Per owner: net from completed months (check-in before this month) and all transfers. Held = earned - sent. */
 // ponytail: scans every past booking and attributes it by current property owner (same as the reports);
 // move the month grouping into SQL if bookings grow large.
-export async function ownerBalances(): Promise<Map<number, number>> {
+export async function ownerBalances(): Promise<Map<number, Balance>> {
   const cutoff = monthRange(currentMonth()).start;
   const [props, past, sent] = await Promise.all([
     db.select().from(properties),
@@ -21,14 +23,15 @@ export async function ownerBalances(): Promise<Map<number, number>> {
       .groupBy(transfers.ownerId),
   ]);
 
-  const balances = new Map<number, number>();
+  const balances = new Map<number, Balance>();
+  const get = (ownerId: number) => {
+    if (!balances.has(ownerId)) balances.set(ownerId, { earned: 0, sent: 0 });
+    return balances.get(ownerId)!;
+  };
   for (const p of props) {
     if (!p.ownerId) continue;
-    const net = netAcrossMonths(past.filter((b) => b.propertyId === p.id), p.commissionPct);
-    balances.set(p.ownerId, (balances.get(p.ownerId) ?? 0) + net);
+    get(p.ownerId).earned += netAcrossMonths(past.filter((b) => b.propertyId === p.id), p.commissionPct);
   }
-  for (const t of sent) {
-    balances.set(t.ownerId, (balances.get(t.ownerId) ?? 0) - Number(t.total));
-  }
+  for (const t of sent) get(t.ownerId).sent += Number(t.total);
   return balances;
 }

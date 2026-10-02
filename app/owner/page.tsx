@@ -59,7 +59,8 @@ export default async function OwnerReport({
     ),
   }));
 
-  const balance = (await ownerBalances()).get(session.uid) ?? 0;
+  const { earned = 0, sent = 0 } = (await ownerBalances()).get(session.uid) ?? {};
+  const balance = earned - sent;
   // ponytail: full history, no pagination; add a limit when it gets long
   const myTransfers = await db
     .select()

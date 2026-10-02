@@ -1,9 +1,11 @@
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { bookings, properties, users } from "@/db/schema";
-import { and, gte, lt, eq, inArray, asc } from "drizzle-orm";
+import { bookings, properties, transfers, users } from "@/db/schema";
+import { and, gte, lt, eq, inArray, asc, desc } from "drizzle-orm";
 import { currentMonth, monthRangeSpan, monthsBetween, monthLabel, daysInMonth, formatIDR } from "@/lib/format";
 import { summarize } from "@/lib/report";
+import { ownerBalances } from "@/lib/balance";
+import { Transfers } from "./transfers";
 import { MonthRangePicker } from "@/components/month-range-picker";
 import { OwnerFilter } from "@/components/owner-filter";
 import { Stat } from "@/components/stat";
@@ -69,6 +71,20 @@ export default async function FinancePage({
     })
     .filter((r) => r.propertyReports.length > 0);
 
+  const shownOwners = owners.filter((o) => ownerId === "all" || o.id === Number(ownerId));
+  const balances = await ownerBalances();
+  const history = await db
+    .select()
+    .from(transfers)
+    .where(
+      and(
+        gte(transfers.transferredOn, start),
+        lt(transfers.transferredOn, end),
+        ownerId === "all" ? undefined : eq(transfers.ownerId, Number(ownerId))
+      )
+    )
+    .orderBy(desc(transfers.transferredOn), desc(transfers.id));
+
   const totalGross = ownerReports.reduce((s, r) => s + r.summary.gross, 0);
   const totalCommission = ownerReports.reduce((s, r) => s + r.summary.commission, 0);
   const totalNet = ownerReports.reduce((s, r) => s + r.summary.net, 0);
@@ -128,6 +144,14 @@ export default async function FinancePage({
           </TableBody>
         </Table>
       )}
+
+      <Transfers
+        balances={shownOwners.map((o) => ({ ownerId: o.id, name: o.name, balance: balances.get(o.id) ?? 0 }))}
+        history={history.map((t) => ({
+          ...t,
+          ownerName: owners.find((o) => o.id === t.ownerId)?.name ?? "-",
+        }))}
+      />
     </div>
   );
 }

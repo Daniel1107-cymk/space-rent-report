@@ -37,3 +37,18 @@ export function summarize(
     occupancyPct: Math.min(100, Math.round((nights / daysInPeriod) * 100)),
   };
 }
+
+/** Net across many months, rounded month by month so it matches the monthly reports to the rupiah. */
+export function netAcrossMonths(
+  bookings: { checkIn: string; payoutIdr: number }[],
+  commissionPct: number
+): number {
+  const grossByMonth = new Map<string, number>();
+  for (const b of bookings) {
+    const month = b.checkIn.slice(0, 7);
+    grossByMonth.set(month, (grossByMonth.get(month) ?? 0) + b.payoutIdr);
+  }
+  let net = 0;
+  for (const gross of grossByMonth.values()) net += gross - commissionFor(gross, commissionPct);
+  return net;
+}

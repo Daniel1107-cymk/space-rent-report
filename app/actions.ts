@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { users, properties, bookings } from "@/db/schema";
+import { users, properties, bookings, transfers } from "@/db/schema";
 import { createSession, destroySession, requireRole, getSession } from "@/lib/auth";
 import { syncAllProperties } from "@/lib/sync";
 import { eq, and } from "drizzle-orm";
@@ -110,6 +110,8 @@ export async function deleteOwner(id: number): Promise<ActionState> {
   if (owned.length > 0) {
     return { error: "Pemilik ini masih memiliki properti yang ditetapkan. Tetapkan ulang terlebih dahulu." };
   }
+  const paid = await db.select().from(transfers).where(eq(transfers.ownerId, id)).limit(1);
+  if (paid.length > 0) return { error: "Pemilik ini memiliki riwayat transfer." };
   await db.delete(users).where(and(eq(users.id, id), eq(users.role, "owner")));
   revalidatePath("/admin", "layout");
 }
@@ -156,6 +158,32 @@ export async function markBookingCleaned(id: number) {
     .where(eq(bookings.id, id));
   revalidatePath("/admin", "layout");
   revalidatePath("/cleaning", "layout");
+}
+
+// ---------- owner transfers ----------
+
+export async function saveTransfer(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireRole("admin");
+  const ownerId = Number(formData.get("ownerId")) || 0;
+  const amountIdr = Math.round(Number(formData.get("amountIdr")));
+  const transferredOn = String(formData.get("transferredOn") ?? "");
+  const note = String(formData.get("note") ?? "").trim() || null;
+
+  if (!ownerId) return { error: "Pilih pemilik." };
+  // no upper bound: transferring more than the balance is an advance
+  if (!Number.isFinite(amountIdr) || amountIdr <= 0) return { error: "Jumlah harus lebih dari 0." };
+  if (!ISO_DATE.test(transferredOn)) return { error: "Tanggal transfer wajib diisi." };
+
+  await db.insert(transfers).values({ ownerId, amountIdr, transferredOn, note });
+  revalidatePath("/admin", "layout");
+  revalidatePath("/owner", "layout");
+}
+
+export async function deleteTransfer(id: number) {
+  await requireRole("admin");
+  await db.delete(transfers).where(eq(transfers.id, id));
+  revalidatePath("/admin", "layout");
+  revalidatePath("/owner", "layout");
 }
 
 // ---------- CSV import ----------

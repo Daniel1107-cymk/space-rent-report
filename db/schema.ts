@@ -45,6 +45,19 @@ export const bookings = sqliteTable(
   ]
 );
 
+// Money sent to an owner. Held balance = net from completed months - sum of these.
+export const transfers = sqliteTable("transfers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  ownerId: integer("owner_id")
+    .notNull()
+    .references(() => users.id),
+  amountIdr: integer("amount_idr").notNull(),
+  // ISO YYYY-MM-DD
+  transferredOn: text("transferred_on").notNull(),
+  note: text("note"),
+});
+
 export type User = typeof users.$inferSelect;
 export type Property = typeof properties.$inferSelect;
 export type Booking = typeof bookings.$inferSelect;
+export type Transfer = typeof transfers.$inferSelect;

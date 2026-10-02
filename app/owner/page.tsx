@@ -1,9 +1,10 @@
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { bookings, properties } from "@/db/schema";
-import { and, gte, lt, eq, inArray, asc } from "drizzle-orm";
+import { bookings, properties, transfers } from "@/db/schema";
+import { and, gte, lt, eq, inArray, asc, desc } from "drizzle-orm";
 import { currentMonth, monthRange, monthLabel, daysInMonth, formatIDR, dateLabel } from "@/lib/format";
 import { summarize } from "@/lib/report";
+import { ownerBalances } from "@/lib/balance";
 import { MonthPicker } from "@/components/month-picker";
 import { Stat } from "@/components/stat";
 import {
@@ -58,6 +59,14 @@ export default async function OwnerReport({
     ),
   }));
 
+  const balance = (await ownerBalances()).get(session.uid) ?? 0;
+  // ponytail: full history, no pagination; add a limit when it gets long
+  const myTransfers = await db
+    .select()
+    .from(transfers)
+    .where(eq(transfers.ownerId, session.uid))
+    .orderBy(desc(transfers.transferredOn), desc(transfers.id));
+
   const totalNet = reports.reduce((s, r) => s + r.summary.net, 0);
   const totalNights = reports.reduce((s, r) => s + r.summary.nights, 0);
 
@@ -87,6 +96,14 @@ export default async function OwnerReport({
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
               {totalNights} malam dipesan di {myProperties.length} properti, setelah komisi.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border bg-card px-6 py-6">
+            <p className="text-sm text-muted-foreground">Saldo ditahan di perusahaan</p>
+            <p className="tabular mt-2 text-2xl font-semibold tracking-tight">{formatIDR(balance)}</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Pendapatan bersih s/d akhir bulan lalu dikurangi transfer.
             </p>
           </div>
 
@@ -143,6 +160,32 @@ export default async function OwnerReport({
               )}
             </section>
           ))}
+
+          <section className="flex flex-col gap-4">
+            <h2 className="border-b pb-2 font-semibold tracking-tight">Riwayat transfer</h2>
+            {myTransfers.length === 0 ? (
+              <p className="py-4 text-sm text-muted-foreground">Belum ada transfer.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Catatan</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {myTransfers.map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="tabular">{dateLabel(t.transferredOn)}</TableCell>
+                      <TableCell className="text-muted-foreground">{t.note}</TableCell>
+                      <TableCell className="tabular text-right">{formatIDR(t.amountIdr)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
         </>
       )}
     </div>

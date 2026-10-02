@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { commissionFor, summarize } from "./report";
+import { commissionFor, netAcrossMonths, summarize } from "./report";
 import { detectFormat, normalizeDate, parseAmount, parseRows } from "./csv";
 import { monthRange, daysInMonth } from "./format";
 
@@ -33,6 +33,20 @@ describe("commission math", () => {
   it("caps occupancy at 100", () => {
     const s = summarize([{ nights: 45, payoutIdr: 1 }], 0, 30);
     expect(s.occupancyPct).toBe(100);
+  });
+
+  it("rounds commission per month across many months", () => {
+    const net = netAcrossMonths(
+      [
+        { checkIn: "2026-07-03", payoutIdr: 999 },
+        { checkIn: "2026-08-10", payoutIdr: 500 },
+        { checkIn: "2026-08-20", payoutIdr: 499 },
+      ],
+      33.3
+    );
+    // 333 commission each month -> 1332; rounding the 1998 total once would give 1333
+    expect(net).toBe(1332);
+    expect(netAcrossMonths([], 20)).toBe(0);
   });
 });
 

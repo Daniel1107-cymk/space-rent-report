@@ -280,9 +280,8 @@ function BookingDialog({
             <Input
               id="payoutIdr"
               name="payoutIdr"
-              type="number"
-              min="0"
-              step="1"
+              // text, not number: type=number reads "1.500.000" as 1.5
+              inputMode="numeric"
               defaultValue={booking?.payoutIdr ?? ""}
               placeholder="1500000"
               required

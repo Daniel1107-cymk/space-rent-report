@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { users, properties, bookings, transfers } from "@/db/schema";
 import { createSession, destroySession, requireRole, getSession } from "@/lib/auth";
 import { syncAllProperties } from "@/lib/sync";
+import { parseAmount } from "@/lib/csv";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
@@ -125,7 +126,7 @@ export async function saveBooking(_prev: ActionState, formData: FormData): Promi
   const guestName = String(formData.get("guestName") ?? "").trim();
   const checkIn = String(formData.get("checkIn") ?? "");
   const checkOut = String(formData.get("checkOut") ?? "");
-  const payoutIdr = Math.round(Number(formData.get("payoutIdr")));
+  const payoutIdr = parseAmount(String(formData.get("payoutIdr") ?? ""));
   const rawSource = String(formData.get("source") ?? "manual");
   const source = (["manual", "airbnb", "agoda"] as const).find((s) => s === rawSource) ?? "manual";
 
@@ -165,7 +166,8 @@ export async function markBookingCleaned(id: number) {
 export async function saveTransfer(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireRole("admin");
   const ownerId = Number(formData.get("ownerId")) || 0;
-  const amountIdr = Math.round(Number(formData.get("amountIdr")));
+  // accepts "1.000.000", "Rp 1.000.000", "1000000"
+  const amountIdr = parseAmount(String(formData.get("amountIdr") ?? ""));
   const transferredOn = String(formData.get("transferredOn") ?? "");
   const note = String(formData.get("note") ?? "").trim() || null;
 

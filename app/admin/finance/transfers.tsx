@@ -140,9 +140,8 @@ function TransferDialog({ owner, onClose }: { owner: BalanceRow; onClose: () => 
             <Input
               id="amountIdr"
               name="amountIdr"
-              type="number"
-              min={1}
-              step={1}
+              // text, not number: type=number reads "1.000.000" as 1
+              inputMode="numeric"
               defaultValue={Math.max(owner.balance, 0) || ""}
               required
             />

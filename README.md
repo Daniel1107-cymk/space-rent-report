@@ -51,4 +51,22 @@ npm test           # commission math + CSV parser tests
    - `TURSO_DATABASE_URL`
    - `TURSO_AUTH_TOKEN`
    - `SESSION_SECRET` (any long random string, e.g. `openssl rand -hex 32`)
+   - `CRON_SECRET` (any long random string; the daily sync/digest cron needs it)
 4. Deploy.
+
+## Telegram bot (admin alerts)
+
+Sends a daily 09:00 WIB digest, new-booking and cancellation alerts, and answers `/today`, `/week`, `/cleaning`, `/balance`.
+
+1. Create a bot with @BotFather (`/newbot`) and copy the token.
+2. Message your bot once, then open `https://api.telegram.org/bot<token>/getUpdates` and copy `message.chat.id`.
+3. Set in `.env.local` and on Vercel:
+   - `TELEGRAM_BOT_TOKEN`
+   - `TELEGRAM_CHAT_ID`
+   - `TELEGRAM_WEBHOOK_SECRET` (any long random string)
+4. After deploying, register the webhook (needed for commands only):
+   ```bash
+   npx tsx --env-file=.env.local scripts/set-telegram-webhook.ts https://your-domain.com
+   ```
+
+Cancellations: on each sync, future Airbnb/Agoda bookings missing from a successfully fetched, non-empty feed are deleted and reported.

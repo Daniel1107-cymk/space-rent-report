@@ -9,6 +9,10 @@ import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { notifyBookingChanges } from "@/lib/telegram-notify";
+import { sendTelegram } from "@/lib/telegram";
+import { propertyNames } from "@/lib/telegram-queries";
 
 export type ActionState = { error?: string } | undefined;
 
@@ -141,6 +145,12 @@ export async function saveBooking(_prev: ActionState, formData: FormData): Promi
     await db.update(bookings).set(values).where(eq(bookings.id, id));
   } else {
     await db.insert(bookings).values(values);
+    const names = await propertyNames();
+    after(() =>
+      notifyBookingChanges({
+        added: [{ ...values, propertyName: names.get(propertyId) ?? `Unit #${propertyId}` }],
+      })
+    );
   }
   revalidatePath("/admin", "layout");
 }
@@ -228,10 +238,24 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
         payoutIdr: r.payoutIdr,
       }))
     )
-    .onConflictDoNothing();
+    .onConflictDoNothing()
+    .returning();
 
   revalidatePath("/admin", "layout");
-  const inserted = result.rowsAffected;
+  const inserted = result.length;
+  // A big historical CSV would flood the chat: send one summary line past a handful of rows.
+  if (inserted > 0) {
+    const names = await propertyNames();
+    const added = result.map((b) => ({
+      ...b,
+      propertyName: names.get(b.propertyId) ?? `Unit #${b.propertyId}`,
+    }));
+    after(() =>
+      added.length <= 5
+        ? notifyBookingChanges({ added })
+        : void sendTelegram(`🆕 <b>${added.length} pemesanan diimpor</b> dari CSV.`)
+    );
+  }
   return { inserted, skipped: rows.length - inserted };
 }
 
@@ -240,8 +264,9 @@ export async function importBookings(rows: ImportRow[]): Promise<{ inserted: num
 export async function syncBookings(): Promise<{ inserted: number; errors: string[] }> {
   await requireRole("admin");
   const result = await syncAllProperties();
+  after(() => notifyBookingChanges(result));
   revalidatePath("/admin", "layout");
-  return result;
+  return { inserted: result.inserted, errors: result.errors };
 }
 
 export async function changePassword(_prev: ActionState, formData: FormData): Promise<ActionState> {

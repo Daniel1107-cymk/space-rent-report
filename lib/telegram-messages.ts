@@ -39,18 +39,25 @@ function dayWord(n: number): string {
   return `${n} hari lagi`;
 }
 
+const PLATFORMS: Record<string, string> = { airbnb: "Airbnb", agoda: "Agoda", manual: "Manual" };
+
+/** "Airbnb" / "Agoda" / "Manual", so you know which app to open to message the guest. */
+export function platformLabel(source?: string): string {
+  if (!source) return "";
+  return PLATFORMS[source] ?? escapeHtml(source);
+}
+
 function line(b: BookingLine): string {
-  return `• <b>${escapeHtml(b.propertyName)}</b> – ${guest(b.guestName)} (${shortDate(b.checkIn)} → ${shortDate(b.checkOut)}, ${b.nights} malam)`;
+  const platform = b.source ? ` 📱 <b>${platformLabel(b.source)}</b>` : "";
+  return `• <b>${escapeHtml(b.propertyName)}</b> – ${guest(b.guestName)}${platform} (${shortDate(b.checkIn)} → ${shortDate(b.checkOut)}, ${b.nights} malam)`;
 }
 
 export function formatNewBooking(b: BookingLine): string {
-  const src = b.source ? ` [${escapeHtml(b.source)}]` : "";
-  return `🆕 <b>Pemesanan baru</b>${src}\n${line(b)}`;
+  return `🆕 <b>Pemesanan baru</b>\n${line(b)}`;
 }
 
 export function formatCancellation(b: BookingLine): string {
-  const src = b.source ? ` [${escapeHtml(b.source)}]` : "";
-  return `❌ <b>Pemesanan dibatalkan</b>${src}\n${line(b)}`;
+  return `❌ <b>Pemesanan dibatalkan</b>\n${line(b)}`;
 }
 
 export function formatUpcoming(upcoming: (BookingLine & { daysUntil: number })[]): string {

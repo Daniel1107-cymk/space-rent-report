@@ -25,6 +25,14 @@ describe("telegram messages", () => {
     expect(msg).toContain("12 Nov → 15 Nov, 3 malam");
   });
 
+  it("shows the platform on every booking line", () => {
+    expect(formatNewBooking(b)).toContain("Airbnb");
+    expect(formatNewBooking({ ...b, source: "agoda" })).toContain("Agoda");
+    expect(formatNewBooking({ ...b, source: "manual" })).toContain("Manual");
+    expect(formatUpcoming([{ ...b, daysUntil: 2 }])).toContain("Airbnb");
+    expect(formatNewBooking({ ...b, source: undefined })).not.toContain("📱");
+  });
+
   it("formats cancellations", () => {
     expect(formatCancellation(b)).toContain("dibatalkan");
   });
